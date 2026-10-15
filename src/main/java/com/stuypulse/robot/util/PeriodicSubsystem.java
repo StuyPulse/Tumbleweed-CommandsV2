@@ -5,8 +5,7 @@
 package com.stuypulse.robot.util;
 
 import org.wpilib.annotation.NoDiscard;
-import org.wpilib.command3.Mechanism;
-import org.wpilib.command3.Scheduler;
+import org.wpilib.command2.SubsystemBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
  * A standard subsystem that includes an extra periodic callback which runs after the command
  * scheduler. Allows outputs to be published after all other periodic code has finished.
  */
-public abstract class PeriodicSubsystem implements Mechanism {
+public abstract class PeriodicSubsystem extends SubsystemBase {
     private static final List<PeriodicSubsystem> subsystemInstances = new ArrayList<>();
 
     private final String name;
@@ -23,13 +22,11 @@ public abstract class PeriodicSubsystem implements Mechanism {
     protected PeriodicSubsystem() {
         name = getClass().getSimpleName();
         subsystemInstances.add(this);
-        this.getRegisteredScheduler().addPeriodic(this::periodic);
     }
 
     protected PeriodicSubsystem(String name) {
         this.name = name;
         subsystemInstances.add(this);
-        this.getRegisteredScheduler().addPeriodic(this::periodic);
     }
 
     /**
@@ -52,13 +49,6 @@ public abstract class PeriodicSubsystem implements Mechanism {
      * applying outputs.
      */
     protected void periodicAfterScheduler() {}
-    ;
-
-    /**
-     * This method is called periodically before {@link Scheduler#run}, and should be overriden for
-     * processing inputs.
-     */
-    protected abstract void periodic();
 
     /** Run the {@link #periodicAfterScheduler} methods for all subsystems. */
     public static void runAllPeriodicAfterScheduler() {

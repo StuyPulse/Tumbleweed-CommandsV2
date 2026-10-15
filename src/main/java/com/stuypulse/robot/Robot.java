@@ -4,20 +4,15 @@
 /**************************************************************/
 package com.stuypulse.robot;
 
-import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.util.PeriodicSubsystem;
 
-import org.wpilib.command3.Command;
-import org.wpilib.command3.Scheduler;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
+import org.wpilib.framework.TimedRobot;
 
 import java.util.Optional;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
  * Robot Class
@@ -26,7 +21,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * extends TimedRobot, meaning that the methods in this class are called automatically during
  * specific states of the robot.
  */
-public class Robot extends LoggedRobot {
+public class Robot extends TimedRobot {
     /**
      * Checks the alliance the robot is on
      *
@@ -42,34 +37,32 @@ public class Robot extends LoggedRobot {
     }
 
     private final RobotContainer robot;
-    private final Scheduler defaultScheduler;
     private Command auto;
 
     public Robot() {
         robot = new RobotContainer();
-        defaultScheduler = Scheduler.getDefault();
 
-        switch (GlobalSettings.CURRENT_MODE) {
-            case REAL -> {
-                // Running on a real robot, log to a USB stick ("/U/logs")
-                Logger.addDataReceiver(new WPILOGWriter());
-                Logger.addDataReceiver(new NT4Publisher());
-            }
+        // switch (GlobalSettings.CURRENT_MODE) {
+        //     case REAL -> {
+        //         // Running on a real robot, log to a USB stick ("/U/logs")
+        //         Logger.addDataReceiver(new WPILOGWriter());
+        //         Logger.addDataReceiver(new NT4Publisher());
+        //     }
 
-            case SIM -> {
-                // Running a physics simulator, log to NT
-                Logger.addDataReceiver(new NT4Publisher());
-            }
+        //     case SIM -> {
+        //         // Running a physics simulator, log to NT
+        //         Logger.addDataReceiver(new NT4Publisher());
+        //     }
 
-            case REPLAY -> {
-                // Replaying a log, set up replay source
-                setUseTiming(false); // Run as fast as possible
-                String logPath = LogFileUtil.findReplayLog();
-                Logger.setReplaySource(new WPILOGReader(logPath));
-                Logger.addDataReceiver(
-                        new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-            }
-        }
+        //     case REPLAY -> {
+        //         // Replaying a log, set up replay source
+        //         setUseTiming(false); // Run as fast as possible
+        //         String logPath = LogFileUtil.findReplayLog();
+        //         Logger.setReplaySource(new WPILOGReader(logPath));
+        //         Logger.addDataReceiver(
+        //                 new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        //     }
+        // }
     }
 
     /*************************/
@@ -78,7 +71,9 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
-        defaultScheduler.run();
+        CommandScheduler.getInstance().run();
+
+        PeriodicSubsystem.runAllPeriodicAfterScheduler();
     }
 
     /*********************/
@@ -100,7 +95,7 @@ public class Robot extends LoggedRobot {
         auto = robot.getAutonomousCommand();
 
         if (auto != null) {
-            defaultScheduler.schedule(auto);
+            CommandScheduler.getInstance().schedule(auto);
         }
     }
 
@@ -117,7 +112,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopInit() {
         if (auto != null) {
-            defaultScheduler.cancel(auto);
+            auto.cancel();
         }
     }
 
@@ -132,9 +127,7 @@ public class Robot extends LoggedRobot {
     /*************************/
 
     @Override
-    public void utilityInit() {
-        defaultScheduler.cancelAll();
-    }
+    public void utilityInit() {}
 
     @Override
     public void utilityPeriodic() {}
