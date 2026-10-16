@@ -206,7 +206,7 @@ public class Swerve extends SubsystemBase {
                 new SysIdRoutine(
                         new SysIdRoutine.Config(
                                 null,
-                                null,
+                                Volts.of(4),
                                 null,
                                 (state) ->
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
