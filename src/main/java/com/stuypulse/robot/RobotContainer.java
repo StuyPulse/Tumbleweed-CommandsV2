@@ -10,12 +10,6 @@ import static org.wpilib.units.Units.RotationsPerSecond;
 
 import com.stuypulse.robot.commands.auton.AutonomousRoutines;
 import com.stuypulse.robot.constants.GlobalPorts;
-import com.stuypulse.robot.constants.GlobalSettings;
-import com.stuypulse.robot.subsystems.swerve.GyroIO;
-import com.stuypulse.robot.subsystems.swerve.GyroIOReal;
-import com.stuypulse.robot.subsystems.swerve.ModuleIO;
-import com.stuypulse.robot.subsystems.swerve.ModuleIOReal;
-import com.stuypulse.robot.subsystems.swerve.ModuleIOSim;
 import com.stuypulse.robot.subsystems.swerve.Swerve;
 import com.stuypulse.robot.subsystems.swerve.TunerConstants;
 
@@ -50,40 +44,8 @@ public class RobotContainer {
     // Autons
     private static Selectable<Command> autonChooser = new Selectable<Command>();
 
-    // Robot container
-
     public RobotContainer() {
-        switch (GlobalSettings.CURRENT_MODE) {
-            case REAL -> {
-                swerve =
-                        new Swerve(
-                                new GyroIOReal(),
-                                new ModuleIOReal(TunerConstants.FrontLeft),
-                                new ModuleIOReal(TunerConstants.FrontRight),
-                                new ModuleIOReal(TunerConstants.BackLeft),
-                                new ModuleIOReal(TunerConstants.BackRight));
-            }
-
-            case SIM -> {
-                swerve =
-                        new Swerve(
-                                new GyroIO() {},
-                                new ModuleIOSim(TunerConstants.FrontLeft),
-                                new ModuleIOSim(TunerConstants.FrontRight),
-                                new ModuleIOSim(TunerConstants.BackLeft),
-                                new ModuleIOSim(TunerConstants.BackRight));
-            }
-
-            default -> {
-                swerve =
-                        new Swerve(
-                                new GyroIO() {},
-                                new ModuleIO() {},
-                                new ModuleIO() {},
-                                new ModuleIO() {},
-                                new ModuleIO() {});
-            }
-        }
+        swerve = Swerve.getInstance();
 
         configureLogging();
         configureDefaultCommands();

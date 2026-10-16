@@ -69,6 +69,8 @@ public class Robot extends LoggedRobot {
                         new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_replay")));
             }
         }
+
+        Logger.start();
     }
 
     /*************************/
