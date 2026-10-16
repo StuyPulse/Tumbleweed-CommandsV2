@@ -4,7 +4,6 @@
 /**************************************************************/
 package com.stuypulse.robot.util;
 
-import org.wpilib.annotation.NoDiscard;
 import org.wpilib.command2.SubsystemBase;
 
 import java.util.ArrayList;
@@ -27,21 +26,6 @@ public abstract class PeriodicSubsystem extends SubsystemBase {
     protected PeriodicSubsystem(String name) {
         this.name = name;
         subsystemInstances.add(this);
-    }
-
-    /**
-     * Gets the name of this mechanism.
-     *
-     * @return The name of the mechanism.
-     */
-    @NoDiscard
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 
     /**

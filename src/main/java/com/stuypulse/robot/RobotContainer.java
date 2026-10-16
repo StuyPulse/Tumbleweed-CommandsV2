@@ -10,7 +10,13 @@ import static org.wpilib.units.Units.RotationsPerSecond;
 
 import com.stuypulse.robot.commands.auton.AutonomousRoutines;
 import com.stuypulse.robot.constants.GlobalPorts;
-import com.stuypulse.robot.subsystems.swerve.CommandSwerveDrivetrain;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.swerve.GyroIO;
+import com.stuypulse.robot.subsystems.swerve.GyroIOReal;
+import com.stuypulse.robot.subsystems.swerve.ModuleIO;
+import com.stuypulse.robot.subsystems.swerve.ModuleIOReal;
+import com.stuypulse.robot.subsystems.swerve.ModuleIOSim;
+import com.stuypulse.robot.subsystems.swerve.Swerve;
 import com.stuypulse.robot.subsystems.swerve.TunerConstants;
 
 import org.wpilib.command2.Command;
@@ -39,7 +45,7 @@ public class RobotContainer {
             new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     // Subsystems
-    private final CommandSwerveDrivetrain swerve = TunerConstants.createDrivetrain();
+    private final Swerve swerve;
 
     // Autons
     private static Selectable<Command> autonChooser = new Selectable<Command>();
@@ -47,6 +53,38 @@ public class RobotContainer {
     // Robot container
 
     public RobotContainer() {
+        switch (GlobalSettings.CURRENT_MODE) {
+            case REAL -> {
+                swerve =
+                        new Swerve(
+                                new GyroIOReal(),
+                                new ModuleIOReal(TunerConstants.FrontLeft),
+                                new ModuleIOReal(TunerConstants.FrontRight),
+                                new ModuleIOReal(TunerConstants.BackLeft),
+                                new ModuleIOReal(TunerConstants.BackRight));
+            }
+
+            case SIM -> {
+                swerve =
+                        new Swerve(
+                                new GyroIO() {},
+                                new ModuleIOSim(TunerConstants.FrontLeft),
+                                new ModuleIOSim(TunerConstants.FrontRight),
+                                new ModuleIOSim(TunerConstants.BackLeft),
+                                new ModuleIOSim(TunerConstants.BackRight));
+            }
+
+            default -> {
+                swerve =
+                        new Swerve(
+                                new GyroIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {});
+            }
+        }
+
         configureLogging();
         configureDefaultCommands();
         configureButtonBindings();
@@ -70,25 +108,27 @@ public class RobotContainer {
     /***************/
 
     private void configureButtonBindings() {
-        swerve.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                swerve.applyRequest(
-                        () ->
-                                drive.withVelocityX(
-                                                -driver.getLeftY()
-                                                        * MaxSpeed) // Drive forward with negative Y
-                                        // (forward)
-                                        .withVelocityY(
-                                                -driver.getLeftX()
-                                                        * MaxSpeed) // Drive left with negative X
-                                        // (left)
-                                        .withRotationalRate(
-                                                -driver.getRightX()
-                                                        * MaxAngularRate) // Drive counterclockwise
-                        // with negative X (left)
-                        ));
+        // swerve.setDefaultCommand(
+        //         // Drivetrain will execute this command periodically
+        //         swerve.(
+        //                 () ->
+        //                         drive.withVelocityX(
+        //                                         -driver.getLeftY()
+        //                                                 * MaxSpeed) // Drive forward with
+        // negative Y
+        //                                 // (forward)
+        //                                 .withVelocityY(
+        //                                         -driver.getLeftX()
+        //                                                 * MaxSpeed) // Drive left with negative X
+        //                                 // (left)
+        //                                 .withRotationalRate(
+        //                                         -driver.getRightX()
+        //                                                 * MaxAngularRate) // Drive
+        // counterclockwise
+        //                 // with negative X (left)
+        // ));
 
-        driver.dpadDown().onTrue(Commands.runOnce(() -> swerve.resetRotation(Rotation2d.ZERO)));
+        driver.dpadDown().onTrue(Commands.runOnce(() -> swerve.resetHeading(Rotation2d.ZERO)));
     }
 
     /**************/
